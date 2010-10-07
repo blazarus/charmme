@@ -2,37 +2,72 @@
 {% block title %}You should talk to...{% endblock %}
 
 {% block content %}
+<h1>You are...</h1>
+<table><tr>
+    <td class="pic">
+        <a href="{{yourself.url}}">
+            <img src="{{yourself.picture_url}}" width="100" height="100" />
+        </a>
+    </td>
+    <td class="person">
+        {% if yourself.url %}
+        <div class="name">
+            <a href="{{yourself.url}}">{{yourself.name}}</a>
+        </div>
+        {% else %}
+        <div class="name">
+            {{yourself.name}}
+        </div>
+        {% endif %}
+        <div class="affiliation">
+           {{yourself.affiliation}}
+        </div>
+    </td>
+</tr></table>
+<p>Your interests include: {{ concepts }}</p>
+<h1>You should talk to...</h1>
 <table>
     {% for user1, user2 in rec_pairs %}
     <tr>
         <td class="pic">
-            <img src="{{user1.picture_url}}" width="100" height="100" />
+            <a href="{{user1.url}}">
+                <img src="{{user1.picture_url}}" width="100" height="100" />
+            </a>
         </td>
         <td class="person">
-            {% if user1.mldirectory %}
+            {% if user1.url %}
             <div class="name">
-                <a href="{{user1.mldirectory}}">{{user1.name}}</a>
-            </div>
-            <div class="affiliation">
-               {{user1.affiliation}}
+                <a href="{{user1.url}}">{{user1.name}}</a>
             </div>
             {% else %}
-            {{user1.name}}
+            {% endif %}
+            <div class="affiliation">
+                {{user1.affiliation}}
+            </div>
+            {% if user1.topics %}
+                <div class="topics">Try talking about: {{user1.topics}}</div>
             {% endif %}
         </td>
         <td class="pic">
-            <img src="{{user2.picture_url}}" width="100" height="100" />
+            <a href="{{user2.url}}">
+                <img src="{{user2.picture_url}}" width="100" height="100" />
+            </a>
         </td>
         <td class="person">
-            {% if user2.mldirectory %}
+            {% if user2.url %}
             <div class="name">
-                <a href="{{user2.mldirectory}}">{{user2.name}}</a>
+                <a href="{{user2.url}}">{{user2.name}}</a>
             </div>
+            {% else %}
+            <div class="name">
+                {{user2.name}}
+            </div>
+            {% endif %}
             <div class="affiliation">
                {{user2.affiliation}}
             </div>
-            {% else %}
-            {{user2.name}}
+            {% if user2.topics %}
+                <div class="topics">Try talking about: {{user2.topics}}</div>
             {% endif %}
         </td>
     </tr>

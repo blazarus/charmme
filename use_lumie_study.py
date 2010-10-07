@@ -1,9 +1,15 @@
 from csc import divisi2
+import numpy as np
+
+docs = divisi2.load('PLDBStudy/Results/documents.smat')
 proj = divisi2.load('PLDBStudy/Results/projections.dmat')
 assoc = divisi2.load('PLDBStudy/Results/spectral.rmat')
+
 project_indices = [i for i in xrange(assoc.shape[0]) if assoc.row_label(i).endswith('.txt')]
 people_indices = [i for i in xrange(assoc.shape[0]) if assoc.row_label(i).startswith('#')]
 concept_indices = [i for i in xrange(assoc.shape[0]) if not assoc.row_label(i).startswith('#') and not assoc.row_label(i).endswith('.txt')]
+concept_weights = docs.col_op(np.sum)[concept_indices]
+means = np.asarray(assoc[:, concept_indices].to_dense()).mean(axis=0)
 
 canonicals_text = {'Architecture and Design': ['architecture', 'build', 'design'],
               'Art and Technology': ['art', 'draw', 'color', 'sculpt', 'create'],
@@ -41,6 +47,12 @@ canonicals = {}
 for key, value in canonicals_text.items():
     canonicals[key] = divisi2.SparseVector.from_counts(value)
 
+def get_related_all(terms, n=10):
+    if not isinstance(terms, list): terms = [terms]
+    cat = divisi2.SparseVector.from_counts(terms)
+    got = assoc.left_category(cat).top_items(n)
+    return [(item[0], item[1]) for item in got]
+
 def get_related_projects(terms, n=10):
     if not isinstance(terms, list): terms = [terms]
     cat = divisi2.SparseVector.from_counts(terms)
@@ -56,8 +68,16 @@ def get_related_people(terms, n=10):
 def get_related_concepts(terms, n=10):
     if not isinstance(terms, list): terms = [terms]
     cat = divisi2.SparseVector.from_counts(terms)
-    got = assoc.left_category(cat)[concept_indices].top_items(n)
+    got = assoc.left_category(divisi2.aligned_matrix_multiply(docs, cat))[concept_indices].top_items(n)
     return got
+
+def intersect_related_concepts(terms, n=10):
+    if not isinstance(terms, list): terms = [terms]
+    prod = np.maximum(1e-6, assoc.left_category(docs.col_named(terms[0])))[concept_indices] - means
+    for term in terms[1:]:
+        got = np.maximum(1e-6, assoc.left_category(docs.col_named(term)))[concept_indices]
+        prod = divisi2.multiply(prod, got-means)
+    return prod.top_items(n)
 
 def get_best_match(project, n=10):
     project = str(project) + '.txt'

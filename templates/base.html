@@ -1,13 +1,12 @@
 <!doctype html>
 <html>
     <head>
-        <title>ConnectMe</title>
+        <title>ConnectMe: {% block title %}Who should I talk to?{% endblock %}</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></link>
     </head>
     <body>
         <a href="/"><img src="{{url_for('static', filename='logo.png')}}"
             title="ConnectMe" alt="ConnectMe"/></a>
-        <h1>{% block title %}Who should I talk to?{% endblock %}</h1>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             <ul class="flashes">
