@@ -1,0 +1,18 @@
+/* empty for now */
+body {
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+h1 {
+    margin-top: 0;
+    font-size: 18pt;
+}
+.person {
+    padding-left: 0.5em;
+}
+.name {
+    font-size: 18pt;
+}
+a {
+    text-decoration: none;
+}
