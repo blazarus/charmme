@@ -7,12 +7,37 @@ h1 {
     margin-top: 0;
     font-size: 18pt;
 }
+img {
+    border-style: none;
+}
+
 .person {
     padding-left: 0.5em;
 }
 .name {
     font-size: 18pt;
 }
+.pic {
+    padding-left: 1em;
+}
+form {
+    margin: 1em;
+}
+input.user-input {
+    font-size: 16pt;
+    width: 20em;
+    color: #555;
+}
+input.button {
+    background-color: #eee;
+    font-size: 15pt;
+    border: 1px outset #aaa;
+    padding-bottom: 1px;
+}
+
 a {
     text-decoration: none;
+}
+.flashes {
+    list-style: none;
 }

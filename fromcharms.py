@@ -5,7 +5,7 @@ class AntiSocialException(Exception): pass
 
 class NotYourEmailException(Exception): pass
 
-def sponsor_rec(email):
+def sponsor_rec(email, n=20):
     url = 'http://tagnet.media.mit.edu/' + email +'/charms'
     theurl = urllib2.urlopen(url).read()
     stream = json.loads(theurl)
@@ -14,5 +14,4 @@ def sponsor_rec(email):
     if charms == []:
         raise AntiSocialException
     ids = [x[id]+'.txt' for x in charms]
-    return get_related_people(ids)
-    
+    return get_related_people(ids, n)

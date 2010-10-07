@@ -3,21 +3,36 @@
 
 {% block content %}
 <table>
-    {% for user, weight in recommendations %}
+    {% for user1, user2 in rec_pairs %}
     <tr>
         <td class="pic">
-            <img src="{{user.picture_url}}" width="100" height="100" />
+            <img src="{{user1.picture_url}}" width="100" height="100" />
         </td>
         <td class="person">
-            {% if user.mldirectory %}
+            {% if user1.mldirectory %}
             <div class="name">
-                <a href="{{user.mldirectory}}">{{user.name}}</a>
+                <a href="{{user1.mldirectory}}">{{user1.name}}</a>
             </div>
             <div class="affiliation">
-               {{user.affiliation}}
+               {{user1.affiliation}}
             </div>
             {% else %}
-            {{user.name}}
+            {{user1.name}}
+            {% endif %}
+        </td>
+        <td class="pic">
+            <img src="{{user2.picture_url}}" width="100" height="100" />
+        </td>
+        <td class="person">
+            {% if user2.mldirectory %}
+            <div class="name">
+                <a href="{{user2.mldirectory}}">{{user2.name}}</a>
+            </div>
+            <div class="affiliation">
+               {{user2.affiliation}}
+            </div>
+            {% else %}
+            {{user2.name}}
             {% endif %}
         </td>
     </tr>
