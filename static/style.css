@@ -14,11 +14,20 @@ img {
 .person {
     padding-left: 0.5em;
 }
+
+.person:hover {
+    background-color: #eef;
+}
 .name {
     font-size: 18pt;
 }
 .topics {
     font-size: 8pt;
+    color: white;
+}
+.person:hover .topics {
+    display: block;
+    color: black;
 }
 .pic {
     padding-left: 1em;
@@ -44,3 +53,4 @@ a {
 .flashes {
     list-style: none;
 }
+
