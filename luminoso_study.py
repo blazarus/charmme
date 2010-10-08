@@ -25,6 +25,7 @@ from csc.divisi2.blending import blend
 from csc.divisi2.ordered_set import OrderedSet
 
 from luminoso_report import render_info_page, default_info_page
+import chunk
 
 import shutil
 
@@ -32,7 +33,7 @@ import shutil
 # what is going on.
 SUBTRACT_MEAN = False
 
-EXTRA_STOPWORDS = ['also', 'not', 'without', 'ever', 'because', 'then', 'than', 'do', 'just', 'how', 'out', 'much', 'use', 'both', 'each', 'other']
+EXTRA_STOPWORDS = ['also', 'not', 'without', 'ever', 'because', 'then', 'than', 'do', 'just', 'how', 'out', 'much', 'use', 'both', 'each', 'other', 'uses', 'using', 'everyday']
 
 try:
     import json
@@ -76,6 +77,9 @@ class Document(object):
         sentences.append(current_sentence)
         return sentences
 
+    def get_noun_phrases(self):
+        return list(chunk.extract_noun_phrases(self.text))
+
 class CanonicalDocument(Document):
     pass
 
@@ -108,8 +112,8 @@ def extract_concepts_from_words(words):
                 negative_words.append(word)
             if word in PUNCTUATION:
                 positive = True
-    positive_concepts = [(c, 1) for c in en_nl.extract_concepts(' '.join(positive_words))]
-    negative_concepts = [(c, -1) for c in en_nl.extract_concepts(' '.join(negative_words))]
+    positive_concepts = [(c, 1) for c in en_nl.extract_concepts(' '.join(positive_words), max_words=3)]
+    negative_concepts = [(c, -1) for c in en_nl.extract_concepts(' '.join(negative_words), max_words=3)]
     neg_tagged_concepts = [(c, -1) for c in neg_tagged_words]
     pos_tagged_concepts = [(c, 1) for c in pos_tagged_words]
     return positive_concepts + pos_tagged_concepts + negative_concepts + neg_tagged_concepts
@@ -435,9 +439,18 @@ class Study(object):
             post_normalize=True)
         self._step('Calculating stats...')
         stats = self.compute_stats(docs, spectral)
+        terms = self.find_terms(self.study_documents)
+        stats['terms'] = terms
         
         results = StudyResults(self, docs, spectral.left, spectral, magnitudes, stats)
         return results
+
+    def find_terms(self, docs):
+        terms = {}
+        for doc in docs:
+            for phrase in doc.get_noun_phrases():
+                terms[en_nl.normalize(phrase)] = phrase
+        return terms
 
 class StudyResults(object):
     def __init__(self, study, docs, projections, spectral, magnitudes, stats):

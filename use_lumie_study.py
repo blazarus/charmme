@@ -1,9 +1,17 @@
 from csc import divisi2
 import numpy as np
+import json
 
 docs = divisi2.load('PLDBStudy/Results/documents.smat')
 proj = divisi2.load('PLDBStudy/Results/projections.dmat')
 assoc = divisi2.load('PLDBStudy/Results/spectral.rmat')
+stats = json.load(open('PLDBStudy/Results/stats.json'))
+terms = stats['terms']
+
+# blacklist
+del terms['open mind common']   # turns into "Open Mind Commons", an obsolete project
+del terms['within']
+del terms['through']
 
 project_indices = [i for i in xrange(assoc.shape[0]) if assoc.row_label(i).endswith('.txt')]
 people_indices = [i for i in xrange(assoc.shape[0]) if assoc.row_label(i).startswith('#')]
@@ -46,6 +54,7 @@ canonicals_text = {'Architecture and Design': ['architecture', 'build', 'design'
 canonicals = {}
 for key, value in canonicals_text.items():
     canonicals[key] = divisi2.SparseVector.from_counts(value)
+print 'loaded'
 
 def get_related_all(terms, n=10):
     if not isinstance(terms, list): terms = [terms]
@@ -69,15 +78,24 @@ def get_related_concepts(terms, n=10):
     if not isinstance(terms, list): terms = [terms]
     cat = divisi2.SparseVector.from_counts(terms)
     got = assoc.left_category(divisi2.aligned_matrix_multiply(docs, cat))[concept_indices].top_items(n)
-    return got
+    adjusted = []
+    for concept, value in got:
+        adjusted.append((concept, value*(5+len(concept.split()))))
+    return sorted(adjusted, key=lambda x: -x[1])
 
 def intersect_related_concepts(terms, n=10):
     if not isinstance(terms, list): terms = [terms]
+    terms = [t for t in terms if t in docs.col_labels]
+    if not terms: return []
     prod = np.maximum(1e-6, assoc.left_category(docs.col_named(terms[0])))[concept_indices] - means
     for term in terms[1:]:
         got = np.maximum(1e-6, assoc.left_category(docs.col_named(term)))[concept_indices]
         prod = divisi2.multiply(prod, got-means)
-    return prod.top_items(n)
+    got2 = prod.top_items(n)
+    adjusted = []
+    for concept, value in got2:
+        adjusted.append((concept, value*(5+len(concept.split()))))
+    return sorted(adjusted, key=lambda x: -x[1])
 
 def get_best_match(project, n=10):
     project = str(project) + '.txt'

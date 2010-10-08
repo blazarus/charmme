@@ -5,7 +5,7 @@ import urllib, urllib2
 import socket
 app = Flask(__name__)
 app.secret_key = "NbNn4fpyT+pNKOL2gEKqo/dUvId7WzKc"
-from use_lumie_study import get_related_people, get_related_concepts, intersect_related_concepts
+from use_lumie_study import get_related_people, get_related_concepts, intersect_related_concepts, terms
 
 @app.route('/')
 def front_page():
@@ -45,9 +45,15 @@ def intersect(list1, list2):
     if isinstance(list2, basestring): list2 = list2.split(', ')
     return set(list1) & set(list2)
 
-def list_concepts(concept_list):
-    return ', '.join(x[0] for x in concept_list if x[1] > 0)
-
+def list_phrases(concept_list, terms, n=8):
+    phrases = []
+    for concept, weight in concept_list:
+        if weight > 0:
+            expanded = terms.get(concept)
+            if expanded:
+                phrases.append(expanded)
+                if len(phrases) == n: break
+    return ', '.join(phrases)
 
 @app.route('/recommend', methods=['GET'])
 def recommend_form_response():
@@ -73,7 +79,7 @@ def recommend_for_user(username=None):
     else: rec_items = get_related_people("#person:%s" % username, 40)
     yourself = get_user_info(username)
     recommendations = [(get_user_info(name[8:]), weight, 
-                        intersect_related_concepts(user_category + [name], 10))
+                        intersect_related_concepts(user_category + [name], 100))
                        for (name, weight) in rec_items
                        if name.startswith('#person:')
                        and name[8:] != username
@@ -87,15 +93,15 @@ def recommend_for_user(username=None):
         flash(u"Sorry, %s, I don't know who you are." % username, 'error')
         return redirect(url_for('front_page'))
     for rec in recommendations:
-        rec[0]['topics'] = list_concepts(rec[2])
+        rec[0]['topics'] = list_phrases(rec[2], terms, 8)
     rec_pairs = []
     for i in xrange(len(recommendations)/2):
         other = i+len(recommendations)/2
         rec_pairs.append((recommendations[i][0],
                           recommendations[other][0]))
 
-    concept_list = get_related_concepts(user_category)
-    concepts = list_concepts(concept_list)
+    concept_list = get_related_concepts(user_category, 100)
+    concepts = list_phrases(concept_list, terms, 8)
     return render_template('people.html', recommendations=recommendations,
                           rec_pairs=rec_pairs, yourself=yourself, concepts=concepts)
 
