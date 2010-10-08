@@ -9,9 +9,9 @@ def sponsor_rec(email, n=20):
     url = 'http://tagnet.media.mit.edu/' + email +'/charms'
     theurl = urllib2.urlopen(url).read()
     stream = json.loads(theurl)
-    if stream.has_key("error"): raise NotYourEmailException
+    if "error" in stream: raise NotYourEmailException
     charms = stream['charms']
-    if charms == []:
+    if not charms:
         raise AntiSocialException
     ids = [x[id]+'.txt' for x in charms]
     return get_related_people(ids, n)
