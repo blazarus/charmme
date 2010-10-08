@@ -7,6 +7,8 @@ app = Flask(__name__)
 app.secret_key = "NbNn4fpyT+pNKOL2gEKqo/dUvId7WzKc"
 from use_lumie_study import get_related_people, get_related_concepts, intersect_related_concepts
 
+user_info_cache = {}
+
 @app.route('/')
 def front_page():
     return render_template('start.html')
@@ -21,6 +23,7 @@ def get_user_info(username):
             'known': False,
         }
         return info
+    if username in user_info_cache: return user_info_cache[username]
     username = urllib.quote(username)
     try:
         url = "http://data.media.mit.edu/people/json/?filter=(cn=%s)" % username
@@ -38,6 +41,7 @@ def get_user_info(username):
             'affiliation': None,
             'known': False
         }
+    user_info_cache[username] = info
     return info
 
 def intersect(list1, list2):
@@ -48,19 +52,21 @@ def intersect(list1, list2):
 def list_concepts(concept_list):
     return ', '.join(x[0] for x in concept_list if x[1] > 0)
 
+def user_tag(username):
+    return '#person:'+username
 
 @app.route('/recommend', methods=['GET'])
 def recommend_form_response():
     username = request.args.get('username')
     if username:
         return redirect(url_for('recommend_for_user', username=username))
-    if not username:
+    else:
         return redirect(url_for('front_page'))
 
 @app.route('/recommend/<username>')
 def recommend_for_user(username=None):
     username = username.replace('@media.mit.edu', '')
-    user_category = ['#person:'+username]
+    user_category = [user_tag(username)]
     if '@' in username:
         try:
             rec_items = sponsor_rec(username, 40)
@@ -70,19 +76,19 @@ def recommend_for_user(username=None):
         except NotYourEmailException:
             flash(u"I don't recognize that e-mail address (%s). Please use the e-mail address that you registered for the event with." % username, 'error')
             return redirect(url_for('front_page'))
-    else: rec_items = get_related_people("#person:%s" % username, 40)
+    else: rec_items = get_related_people(user_tag(username), 40)
     yourself = get_user_info(username)
-    recommendations = [(get_user_info(name[8:]), weight, 
-                        intersect_related_concepts(user_category + [name], 10))
+    user_info = [(name[8:], get_user_info(name[8:]), weight)
                        for (name, weight) in rec_items
                        if name.startswith('#person:')
-                       and name[8:] != username
-                      ]
-    recommendations = [item for item in recommendations
-                       if item[0]['known']
-                       and item[1] > 0.0
-                       and not intersect(item[0]['affiliation'], yourself['affiliation'])
-                      ][:10]
+                       and name[8:] != username]
+    not_same_group = [(name, info, weight) for name, info, weight in user_info
+                       if info['known']
+                       and weight > 0.0
+                       and not intersect(info['affiliation'], yourself['affiliation'])]
+    recommendations = [(info, weight,
+                        intersect_related_concepts(user_category + [user_tag(name)], 10))
+                       for name, info, weight in not_same_group[:10]]
     if not recommendations:
         flash(u"Sorry, %s, I don't know who you are." % username, 'error')
         return redirect(url_for('front_page'))
