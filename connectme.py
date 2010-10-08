@@ -54,6 +54,12 @@ def list_phrases(concept_list, terms, n=8):
     Make a natural-languagey list of phrases from a list of top concepts.
     This should perhaps be split out into another module.
     """
+    def smash(text):
+        """
+        A blunt hammer for finding when un-normalized phrases are too similar.
+        """
+        return text.lower().replace('-', ' ')
+
     phrases = []
     for concept, weight in concept_list:
         if weight > 0:
@@ -64,10 +70,10 @@ def list_phrases(concept_list, terms, n=8):
                 dup = False
                 for i in xrange(len(phrases)):
                     existing = phrases[i]
-                    if existing.lower().find(expanded.lower()[:-1]) > -1:
+                    if smash(existing).find(smash(expanded)[:-1]) > -1:
                         dup = True
                         break
-                    elif expanded.lower().find(existing.lower()[:-1]) > -1:
+                    elif smash(expanded).find(smash(existing)[:-1]) > -1:
                         phrases[i] = expanded
                         dup = True
                         break
