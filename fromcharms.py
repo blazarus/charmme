@@ -12,7 +12,7 @@ def sponsor_proj_list(email):
     stream = json.loads(theurl)
     if stream.get("error"): raise NotYourEmailException
     charms = stream['charms']
-    if charms == []:
+    if not charms:
         raise AntiSocialException
     ids = [x['id']+'.txt' for x in charms]
     return ids
