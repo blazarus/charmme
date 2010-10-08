@@ -31,4 +31,4 @@ def extract_noun_phrases(text):
 if __name__ == '__main__':
     for np in extract_noun_phrases(demo_text):
         print np
-
+        

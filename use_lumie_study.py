@@ -10,8 +10,20 @@ terms = stats['terms']
 
 # blacklist
 del terms['open mind common']   # turns into "Open Mind Commons", an obsolete project
-del terms['within']
-del terms['through']
+del terms['everyone room']      # "everyone in the room" - not a useful topic
+del terms['dynamic way']        # too vague
+del terms['beyond']             # not actually a noun
+del terms['use']                # how does this keep coming back?!
+del terms['approach']           # too vague
+del terms['collect hundred']    # not actually a noun phrase
+del terms['hundred']            # it's just a number
+del terms['thousand']           # it's just a number
+del terms['hundred thousand']   # it's just a number
+del terms['korean']             # too associated with common sense
+del terms['exploit']            # not actually a noun
+del terms['develop']            # not actually a noun
+del terms['new']                # not actually a noun
+del terms['various way']        # too vague
 
 project_indices = [i for i in xrange(assoc.shape[0]) if assoc.row_label(i).endswith('.txt')]
 people_indices = [i for i in xrange(assoc.shape[0]) if assoc.row_label(i).startswith('#')]
@@ -74,27 +86,29 @@ def get_related_people(terms, n=10):
     got = assoc.left_category(cat)[people_indices].top_items(n)
     return got
 
-def get_related_concepts(terms, n=10):
-    if not isinstance(terms, list): terms = [terms]
-    cat = divisi2.SparseVector.from_counts(terms)
-    got = assoc.left_category(divisi2.aligned_matrix_multiply(docs, cat))[concept_indices].top_items(n)
+def get_related_concepts(cat, n=10):
+    got = assoc.left_category(cat)[concept_indices].top_items(n)
+
+    # Adjust order to favor multi-word concepts
     adjusted = []
     for concept, value in got:
-        adjusted.append((concept, value*(5+len(concept.split()))))
+        adjusted.append((concept, value*(3+len(concept.split()))))
     return sorted(adjusted, key=lambda x: -x[1])
 
-def intersect_related_concepts(terms, n=10):
-    if not isinstance(terms, list): terms = [terms]
-    terms = [t for t in terms if t in docs.col_labels]
-    if not terms: return []
-    prod = np.maximum(1e-6, assoc.left_category(docs.col_named(terms[0])))[concept_indices] - means
-    for term in terms[1:]:
-        got = np.maximum(1e-6, assoc.left_category(docs.col_named(term)))[concept_indices]
+def intersect_related_concepts(categories, n=10):
+    if not isinstance(categories, list): categories = [categories]
+    prod = np.maximum(1e-6, assoc.left_category(categories[0]))[concept_indices] - means
+    
+    # Multiply together all non-negative concept values
+    for category in categories[1:]:
+        got = np.maximum(1e-6, assoc.left_category(category))[concept_indices]
         prod = divisi2.multiply(prod, got-means)
     got2 = prod.top_items(n)
+    
+    # Adjust order to favor multi-word concepts
     adjusted = []
     for concept, value in got2:
-        adjusted.append((concept, value*(5+len(concept.split()))))
+        adjusted.append((concept, value*(3+len(concept.split()))))
     return sorted(adjusted, key=lambda x: -x[1])
 
 def get_best_match(project, n=10):
@@ -107,3 +121,6 @@ def get_best_match(project, n=10):
     best = sorted([(value, key) for (key, value) in results.items()])[-5:][::-1]
     return [(x[1], x[0]) for x in best]
         
+def make_user_category(usertag):
+    return docs.col_named(usertag)
+

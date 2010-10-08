@@ -33,7 +33,7 @@ import shutil
 # what is going on.
 SUBTRACT_MEAN = False
 
-EXTRA_STOPWORDS = ['also', 'not', 'without', 'ever', 'because', 'then', 'than', 'do', 'just', 'how', 'out', 'much', 'use', 'both', 'each', 'other', 'uses', 'using', 'everyday']
+EXTRA_STOPWORDS = ['also', 'not', 'without', 'ever', 'because', 'then', 'than', 'do', 'just', 'how', 'out', 'much', 'use', 'both', 'each', 'other', 'uses', 'using', 'everyday', 'within', 'through', 'over']
 
 try:
     import json
