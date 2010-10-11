@@ -66,7 +66,7 @@ canonicals_text = {'Architecture and Design': ['architecture', 'build', 'design'
 canonicals = {}
 for key, value in canonicals_text.items():
     canonicals[key] = divisi2.SparseVector.from_counts(value)
-print 'loaded'
+#print 'loaded'
 
 def get_related_all(terms, n=10):
     if not isinstance(terms, list): terms = [terms]
