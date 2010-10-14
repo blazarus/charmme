@@ -125,7 +125,7 @@ def recommend_for_user(username=None):
     not_same_group = [(name, info, weight) for name, info, weight in user_info
                        if info['known']
                        and weight > 0.0
-                       and not intersect(info['affiliation'], yourself['affiliation'])]
+                       and not intersect(info['affiliation'], yourself.get('affiliation', ''))]
     recommendations = [(info, weight,
                         intersect_related_concepts([user_category, make_user_category(user_tag(name))], 100))
                        for name, info, weight in not_same_group[:10]]
