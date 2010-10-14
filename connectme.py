@@ -28,8 +28,8 @@ def get_user_info(username):
     try:
         url = "http://data.media.mit.edu/people/json/?filter=(cn=%s)" % username
         data = json.loads(urllib2.urlopen(url).read().decode('latin1'))
-        data[0]['name'] # test to make sure it exists
         info = data[0]
+        info['name'] = info['name'].encode('latin1', 'replace').decode('utf-8', 'replace') # Usernames are actually utf-8. Undo latin1-ization.
         info['known'] = True
         if isinstance(info['affiliation'], list):
             info['affiliation'] = ', '.join(info['affiliation'])
