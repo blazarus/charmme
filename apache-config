@@ -1,6 +1,7 @@
 <VirtualHost *:80>
 	ServerAdmin kcarnold@media.mit.edu
     ServerName connectme.csc.media.mit.edu
+    ServerAlias connectme.media.mit.edu connectme
 
     WSGIDaemonProcess connectme user=kcarnold group=agents processes=5
     WSGIScriptAlias / /csc/code/connectme/app.wsgi
