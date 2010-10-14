@@ -1,0 +1,17 @@
+<VirtualHost *:80>
+	ServerAdmin kcarnold@media.mit.edu
+    ServerName connectme.csc.media.mit.edu
+
+    WSGIDaemonProcess connectme user=kcarnold group=agents processes=5
+    WSGIScriptAlias / /csc/code/connectme/app.wsgi
+    WSGIProcessGroup connectme
+    WSGIScriptReloading On
+
+	CustomLog /var/log/apache2/connectme.access.log combined
+	ErrorLog /var/log/apache2/connectme.error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+</VirtualHost>
