@@ -6,24 +6,29 @@ docs = divisi2.load('PLDBStudy/Results/documents.smat')
 proj = divisi2.load('PLDBStudy/Results/projections.dmat')
 assoc = divisi2.load('PLDBStudy/Results/spectral.rmat')
 stats = json.load(open('PLDBStudy/Results/stats.json'))
-terms = stats['terms']
+
+#terms = stats['terms']
+terms = {}
+for term in proj.row_labels:
+    if not term.startswith('#'):
+        terms[term] = term
 
 # blacklist
-del terms['open mind common']   # turns into "Open Mind Commons", an obsolete project
-del terms['everyone room']      # "everyone in the room" - not a useful topic
-del terms['dynamic way']        # too vague
-del terms['beyond']             # not actually a noun
-del terms['use']                # how does this keep coming back?!
-del terms['approach']           # too vague
-del terms['collect hundred']    # not actually a noun phrase
-del terms['hundred']            # it's just a number
-del terms['thousand']           # it's just a number
-del terms['hundred thousand']   # it's just a number
-del terms['korean']             # too associated with common sense
-del terms['exploit']            # not actually a noun
-del terms['develop']            # not actually a noun
-del terms['new']                # not actually a noun
-del terms['various way']        # too vague
+#del terms['open mind common']   # turns into "Open Mind Commons", an obsolete project
+#del terms['everyone room']      # "everyone in the room" - not a useful topic
+#del terms['dynamic way']        # too vague
+#del terms['beyond']             # not actually a noun
+#del terms['use']                # how does this keep coming back?!
+#del terms['approach']           # too vague
+#del terms['collect hundred']    # not actually a noun phrase
+#del terms['hundred']            # it's just a number
+#del terms['thousand']           # it's just a number
+#del terms['hundred thousand']   # it's just a number
+#del terms['korean']             # too associated with common sense
+#del terms['exploit']            # not actually a noun
+#del terms['develop']            # not actually a noun
+#del terms['new']                # not actually a noun
+#del terms['various way']        # too vague
 
 project_indices = [i for i in xrange(assoc.shape[0]) if assoc.row_label(i).endswith('.txt')]
 people_indices = [i for i in xrange(assoc.shape[0]) if assoc.row_label(i).startswith('#')]
@@ -71,23 +76,23 @@ for key, value in canonicals_text.items():
 def get_related_all(terms, n=10):
     if not isinstance(terms, list): terms = [terms]
     cat = divisi2.SparseVector.from_counts(terms)
-    got = assoc.left_category(cat).top_items(n)
+    got = assoc.right_category(cat).top_items(n)
     return [(item[0], item[1]) for item in got]
 
 def get_related_projects(terms, n=10):
     if not isinstance(terms, list): terms = [terms]
     cat = divisi2.SparseVector.from_counts(terms)
-    got = assoc.left_category(cat)[project_indices].top_items(n)
+    got = assoc.right_category(cat)[project_indices].top_items(n)
     return [(int(item[0][:-4]), item[1]) for item in got]
 
 def get_related_people(terms, n=10):
     if not isinstance(terms, list): terms = [terms]
     cat = divisi2.SparseVector.from_counts(terms)
-    got = assoc.left_category(cat)[people_indices].top_items(n)
+    got = assoc.right_category(cat)[people_indices].top_items(n)
     return got
 
 def get_related_concepts(cat, n=10):
-    got = assoc.left_category(cat)[concept_indices].top_items(n)
+    got = assoc.right_category(cat)[concept_indices].top_items(n)
 
     # Adjust order to favor multi-word concepts
     adjusted = []
@@ -97,11 +102,11 @@ def get_related_concepts(cat, n=10):
 
 def intersect_related_concepts(categories, n=10):
     if not isinstance(categories, list): categories = [categories]
-    prod = np.maximum(1e-6, assoc.left_category(categories[0]))[concept_indices] - means
+    prod = np.maximum(1e-6, assoc.right_category(categories[0]))[concept_indices] - means
     
     # Multiply together all non-negative concept values
     for category in categories[1:]:
-        got = np.maximum(1e-6, assoc.left_category(category))[concept_indices]
+        got = np.maximum(1e-6, assoc.right_category(category))[concept_indices]
         prod = divisi2.multiply(prod, got-means)
     got2 = prod.top_items(n)
     
