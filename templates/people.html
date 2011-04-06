@@ -35,12 +35,13 @@
             </a>
         </td>
         <td class="person">
-            {% if user1.url %}
             <div class="name">
+              {% if user1.url %}
                 <a href="{{user1.url}}">{{user1.name}}</a>
+              {% else %}
+                {{user1.name}}
+              {% endif %}
             </div>
-            {% else %}
-            {% endif %}
             <div class="affiliation">
                 {{user1.affiliation}}
             </div>
@@ -54,15 +55,13 @@
             </a>
         </td>
         <td class="person">
-            {% if user2.url %}
             <div class="name">
+              {% if user2.url %}
                 <a href="{{user2.url}}">{{user2.name}}</a>
-            </div>
-            {% else %}
-            <div class="name">
+              {% else %}
                 {{user2.name}}
+              {% endif %}
             </div>
-            {% endif %}
             <div class="affiliation">
                {{user2.affiliation}}
             </div>
