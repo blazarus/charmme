@@ -21,19 +21,29 @@ def front_page():
     return render_template('start.html')
 
 def get_user_info(username):
-    if '@' in username:
-        # handle sponsors:
-        info = {
-            'username': username,
-            'name': username,
-            'picture_url': "http://pldb.media.mit.edu/face/nobody",
-            'known': False,
-        }
-        return info
     if username in user_info_cache: return user_info_cache[username]
-    username = urllib.quote(username)
+    if '@' in username:
+        try:
+            data = json.load(urllib2.urlopen('http://tagnet.media.mit.edu/users?user_name=%s&capability=profile' % urllib.quote(username)))['profile']
+            info = dict(
+                username=username,
+                name=data['name'],
+                picture_url=data['picture_url'],
+                affiliation=', '.join(data['affiliation']),
+                known=True)
+            user_info_cache[username] = info
+            return info
+        except Exception:
+            # handle sponsors:
+            info = {
+                'username': username,
+                'name': username,
+                'picture_url': "http://pldb.media.mit.edu/face/nobody",
+                'known': False,
+                }
+            return info
     try:
-        url = "http://data.media.mit.edu/people/json/?filter=(cn=%s)" % username
+        url = "http://data.media.mit.edu/people/json/?filter=(cn=%s)" % urllib.quote(username)
         data = json.loads(urllib2.urlopen(url).read().decode('latin1'))
         info = data[0]
         info['name'] = info['name'].encode('latin1', 'replace').decode('utf-8', 'replace') # Usernames are actually utf-8. Undo latin1-ization.
