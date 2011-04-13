@@ -18,6 +18,7 @@ def sponsor_proj_list(email):
     return ids
 
 def sponsor_rec(email, n=20):
+    # FIXME
     ids = sponsor_proj_list(email)
     return get_related_people(ids, n)
 
