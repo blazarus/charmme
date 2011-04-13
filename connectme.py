@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from fromcharms import sponsor_category, sponsor_rec, AntiSocialException, NotYourEmailException
+from fromcharms import sponsor_category, sponsor_rec, AntiSocialException, NotYourEmailException, charms_for_user
 import json
 import urllib, urllib2
 import socket
@@ -113,9 +113,11 @@ def recommend_form_response():
 @app.route('/recommend/<username>')
 def recommend_for_user(username=None):
     username = username.replace('@media.mit.edu', '')
+    user_charms = []
     if '@' in username:
         username = username.replace('@test', '@media.mit.edu')
         try:
+            user_charms = charms_for_user(username)
             user_vec = sponsor_category(username)
         except AntiSocialException:
             flash(u"You don't have any charms yet. Go out and meet people!", 'error')
@@ -132,6 +134,8 @@ def recommend_for_user(username=None):
 
     rec_items = get_related_people(user_vec, 40)
     yourself = get_user_info(username)
+    yourself['num_charms'] = len(user_charms)
+    yourself['charms'] = user_charms
     user_info = [(name, get_user_info(name), weight)
                        for (name, weight) in rec_items
                        if name != username]
@@ -143,7 +147,7 @@ def recommend_for_user(username=None):
                         intersect_related_concepts([user_vec, make_user_vec(name), make_user_vec(name)], 100))
                        for name, info, weight in not_same_group[:10]]
     if not recommendations:
-        assert False
+        #assert False
         flash(u"Sorry, %s, I don't know who you are." % username, 'error')
         return redirect(url_for('front_page'))
     for rec in recommendations:

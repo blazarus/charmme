@@ -24,7 +24,12 @@
         </div>
     </td>
 </tr></table>
-<p>Your interests include: {{ concepts }}</p>
+<h1>Your interestes...</h1>
+<p>You have expressed interest in {{yourself.num_charms}} projects:
+<ul style="-moz-column-count: 3; column-count: 3;">
+  {% for charm in yourself.charms %}<li><b>{{charm.projectname}}</b> ({{charm.researchgroup}})</li>{% endfor %}</p>
+</ul>
+<p>which suggests that your interests may include: {{ concepts }}</p>
 <h1>You should talk to...</h1>
 <table>
     {% for user1, user2 in rec_pairs %}

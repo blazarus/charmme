@@ -6,7 +6,7 @@ class AntiSocialException(Exception): pass
 
 class NotYourEmailException(Exception): pass
 
-def sponsor_proj_list(email):
+def charms_for_user(email):
     url = 'http://tagnet.media.mit.edu/charms?user_name=' + email
     try:
         theurl = urllib2.urlopen(url).read()
@@ -14,7 +14,10 @@ def sponsor_proj_list(email):
     except urllib2.HTTPError:
         raise NotYourEmailException
     if stream.get("error"): raise NotYourEmailException
-    charms = stream['charms']
+    return stream['charms']
+
+def sponsor_proj_list(email):
+    charms = charms_for_user(email)
     if not charms:
         raise AntiSocialException
     ids = ['models/PLDBStudy/Documents/'+x['id']+'.txt' for x in charms]
