@@ -137,6 +137,7 @@ def recommend_for_user(username=None):
             return redirect(url_for('front_page'))
     else:
         try:
+            user_charms = charms_for_user(username)
             user_vec = make_user_vec(username)
         except KeyError:
             flash(u"Sorry, %s, I don't know who you are." % username, 'error')
