@@ -4,8 +4,9 @@ import json
 import luminoso
 
 model = luminoso.load('pldb_luminoso2')
+doc_matrix = model.get_doc_matrix('pldb')
+tag_matrix = model.get_tag_matrix()
 
-means = np.mean(model.assoc.left_view, axis=0)
 
 def get_related_people(vec, n=10):
     got = model.tags_similar_to_vector(vec)
@@ -35,5 +36,9 @@ def intersect_related_concepts(categories, n=10):
     return prod.top_items(n)
         
 def make_user_vec(user):
-    return model.get_tag_matrix().row_named(('person', user))
+    return tag_matrix.row_named(('person', user))
 
+def make_documents_vec(docs):
+    from operator import __add__
+    vecs = [doc_matrix.row_named(doc) for doc in docs]
+    return reduce(__add__, vecs)

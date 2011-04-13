@@ -3,6 +3,7 @@ from fromcharms import sponsor_category, sponsor_rec, AntiSocialException, NotYo
 import json
 import urllib, urllib2
 import socket
+import nltk
 app = Flask(__name__)
 app.secret_key = "NbNn4fpyT+pNKOL2gEKqo/dUvId7WzKc"
 from use_lumie_study import get_related_people, get_related_concepts, intersect_related_concepts, model, make_user_vec
@@ -12,7 +13,8 @@ user_info_cache = {}
 blacklist = ['mind common', 'everyone room', 'dynamic way', 'beyond', 'use',
              'approach', 'collect hundred', 'hundred', 'thousand',
              'hundred thousand', 'korean', 'exploit', 'develop', 'new',
-             'various way', 'date everyone']
+             'various way', 'date everyone', 'enable', 'leverage', 'tool use',
+             'various', 'project explores']
 
 @app.route('/')
 def front_page():
@@ -54,6 +56,15 @@ def intersect(list1, list2):
     if isinstance(list2, basestring): list2 = list2.split(', ')
     return set(list1) & set(list2)
 
+def is_noun_phrase(phrase):
+    """
+    Use NLTK to guess whether this is a noun phrase.
+    """
+
+    tagged = nltk.pos_tag(phrase.split())
+    last_tag = tagged[-1][1]
+    return (last_tag.startswith('NN') or last_tag == 'VBG')
+
 def list_phrases(concept_list, n=8):
     """
     Make a natural-languagey list of phrases from a list of top concepts.
@@ -71,7 +82,7 @@ def list_phrases(concept_list, n=8):
             continue
         if weight > 0:
             expanded = model.database.get_term_text(concept)
-            if expanded:
+            if expanded and is_noun_phrase(expanded):
                 # check to see if the phrase is a superset or subset of another
                 # phrase in the list
                 dup = False
@@ -103,7 +114,7 @@ def recommend_form_response():
 def recommend_for_user(username=None):
     username = username.replace('@media.mit.edu', '')
     if '@' in username:
-        username = username.replace('@test', '')
+        username = username.replace('@test', '@media.mit.edu')
         try:
             user_vec = sponsor_category(username)
         except AntiSocialException:
