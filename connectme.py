@@ -14,7 +14,7 @@ blacklist = ['mind common', 'everyone room', 'dynamic way', 'beyond', 'use',
              'approach', 'collect hundred', 'hundred', 'thousand',
              'hundred thousand', 'korean', 'exploit', 'develop', 'new',
              'various way', 'date everyone', 'enable', 'leverage', 'tool use',
-             'various', 'project explores']
+             'various', 'project explore', 'sponsor', 'technique', 'allow', 'allow user']
 
 @app.route('/')
 def front_page():
@@ -91,8 +91,9 @@ def list_phrases(concept_list, n=8):
         if concept in blacklist:
             continue
         if weight > 0:
+            count = model.database.count_term(concept)
             expanded = model.database.get_term_text(concept)
-            if expanded and is_noun_phrase(expanded):
+            if count > 2 and expanded and is_noun_phrase(expanded):
                 # check to see if the phrase is a superset or subset of another
                 # phrase in the list
                 dup = False
