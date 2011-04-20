@@ -28,7 +28,7 @@
 {% if yourself.num_charms > 0 %}
     <p>You have expressed interest in {{yourself.num_charms}} projects:
     <ul style="-moz-column-count: 3; column-count: 3;">
-      {% for charm in yourself.charms %}<li><b>{{charm.projectname}}</b> ({{charm.researchgroup}})</li>{% endfor %}</p>
+      {% for charm in yourself.charms %}{% if charm.projectname %}<li><b>{{charm.projectname}}</b> ({{charm.researchgroup}})</li>{% endif %}{% endfor %}</p>
     </ul>
     <p>which suggests that your interests may include: {{ concepts }}</p>
 {% else %}
