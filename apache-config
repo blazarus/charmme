@@ -3,7 +3,7 @@
     ServerName connectme.csc.media.mit.edu
     ServerAlias connectme.media.mit.edu connectme
 
-    WSGIDaemonProcess connectme user=kcarnold group=agents processes=5
+    WSGIDaemonProcess connectme user=kcarnold group=agents processes=1 threads=1
     WSGIScriptAlias / /csc/code/connectme/app.wsgi
     WSGIProcessGroup connectme
     WSGIScriptReloading On
