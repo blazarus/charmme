@@ -38,7 +38,7 @@
 <table>
     {% for user1, user2 in rec_pairs %}
     <tr>
-        <td class="pic">
+        <td class="pic" align="right">
             <a href="{{user1.url}}">
                 <img src="{{user1.picture_url}}"/>
             </a>
@@ -58,9 +58,9 @@
                 <div class="topics">Try talking about: {{user1.topics}}</div>
             {% endif %}
         </td>
-        <td class="pic">
+        <td class="pic" align="right">
             <a href="{{user2.url}}">
-                <img src="{{user2.picture_url}}" width="100" height="100" />
+                <img src="{{user2.picture_url}}" />
             </a>
         </td>
         <td class="person">
