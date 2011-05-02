@@ -40,5 +40,5 @@ def make_user_vec(user):
 
 def make_documents_vec(docs):
     from operator import __add__
-    vecs = [doc_matrix.row_named(doc) for doc in docs]
+    vecs = [doc_matrix.row_named(doc) for doc in docs if doc in doc_matrix.row_labels]
     return reduce(__add__, vecs)
