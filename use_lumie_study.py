@@ -1,9 +1,9 @@
 from csc import divisi2
 import numpy as np
 import json
-import luminoso
+import luminoso2
 
-model = luminoso.load('pldb_luminoso2')
+model = luminoso2.load('pldb_luminoso2')
 doc_matrix = model.get_doc_matrix('pldb')
 tag_matrix = model.get_tag_matrix()
 
