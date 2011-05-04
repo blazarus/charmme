@@ -1,0 +1,20 @@
+<td class="pic" align="right">
+  <a href="{{person.url}}">
+    <img src="{{person.picture_url}}">
+  </a>
+</td>
+<td class="person">
+  <div class="name">
+    {% if person.url %}
+      <a href="{{person.url}}">{{person.name}}</a>
+    {% else %}
+      {{person.name}}
+    {% endif %}
+  </div>
+  <div class="affiliation">
+    {{person.affiliation}}
+  </div>
+  {% if person.topics %}
+    <div class="topics">Try talking about: {{person.topics}}</div>
+  {% endif %}
+</td>

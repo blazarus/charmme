@@ -4,25 +4,8 @@
 {% block content %}
 <h1>You are...</h1>
 <table><tr>
-    <td class="pic">
-        <a href="{{yourself.url}}">
-            <img src="{{yourself.picture_url}}"/>
-        </a>
-    </td>
-    <td class="person">
-        {% if yourself.url %}
-        <div class="name">
-            <a href="{{yourself.url}}">{{yourself.name}}</a>
-        </div>
-        {% else %}
-        <div class="name">
-            {{yourself.name}}
-        </div>
-        {% endif %}
-        <div class="affiliation">
-           {{yourself.affiliation}}
-        </div>
-    </td>
+  {% set person = yourself %}
+  {% include "_person_cells.html" %}
 </tr></table>
 <h1>Your interests...</h1>
 {% if yourself.num_charms > 0 %}
@@ -38,47 +21,11 @@
 <table>
     {% for user1, user2 in rec_pairs %}
     <tr>
-        <td class="pic" align="right">
-            <a href="{{user1.url}}">
-                <img src="{{user1.picture_url}}"/>
-            </a>
-        </td>
-        <td class="person">
-            <div class="name">
-              {% if user1.url %}
-                <a href="{{user1.url}}">{{user1.name}}</a>
-              {% else %}
-                {{user1.name}}
-              {% endif %}
-            </div>
-            <div class="affiliation">
-                {{user1.affiliation}}
-            </div>
-            {% if user1.topics %}
-                <div class="topics">Try talking about: {{user1.topics}}</div>
-            {% endif %}
-        </td>
-        <td class="pic" align="right">
-            <a href="{{user2.url}}">
-                <img src="{{user2.picture_url}}" />
-            </a>
-        </td>
-        <td class="person">
-            <div class="name">
-              {% if user2.url %}
-                <a href="{{user2.url}}">{{user2.name}}</a>
-              {% else %}
-                {{user2.name}}
-              {% endif %}
-            </div>
-            <div class="affiliation">
-               {{user2.affiliation}}
-            </div>
-            {% if user2.topics %}
-                <div class="topics">Try talking about: {{user2.topics}}</div>
-            {% endif %}
-        </td>
-    </tr>
+      {% set person = user1 %}
+      {% include "_person_cells.html" %}
+      {% set person = user2 %}
+      {% include "_person_cells.html" %}
+   </tr>
     {% endfor %}
 </table>
 {% endblock %}
