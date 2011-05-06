@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}You should talk to...{% endblock %}
+
+{% block content %}
+<h1>Topic search</h1>
+Searched for: <b>{{topic}}</b>
+
+<h2>Projects</h2>
+<ul>
+{% for proj, value in projects %}
+  <li>
+    {{proj.name}}
+  </li>
+{% endfor %}
+</ul>
+
+<h2>People</h2>
+<table>
+    {% for user1, user2 in rec_pairs %}
+    <tr>
+        <td class="pic" align="right">
+            <a href="{{user1.url}}">
+                <img src="{{user1.picture_url}}"/>
+            </a>
+        </td>
+        <td class="person">
+            <div class="name">
+              {% if user1.url %}
+                <a href="{{user1.url}}">{{user1.name}}</a>
+              {% else %}
+                {{user1.name}}
+              {% endif %}
+            </div>
+            <div class="affiliation">
+                {{user1.affiliation}}
+            </div>
+            {% if user1.topics %}
+                <div class="topics">Try talking about: {{user1.topics}}</div>
+            {% endif %}
+        </td>
+        <td class="pic" align="right">
+            <a href="{{user2.url}}">
+                <img src="{{user2.picture_url}}" />
+            </a>
+        </td>
+        <td class="person">
+            <div class="name">
+              {% if user2.url %}
+                <a href="{{user2.url}}">{{user2.name}}</a>
+              {% else %}
+                {{user2.name}}
+              {% endif %}
+            </div>
+            <div class="affiliation">
+               {{user2.affiliation}}
+            </div>
+            {% if user2.topics %}
+                <div class="topics">Try talking about: {{user2.topics}}</div>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
+

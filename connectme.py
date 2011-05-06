@@ -6,7 +6,8 @@ import socket
 import nltk
 app = Flask(__name__)
 app.secret_key = "NbNn4fpyT+pNKOL2gEKqo/dUvId7WzKc"
-from use_lumie_study import get_related_people, get_related_concepts, intersect_related_concepts, model, make_user_vec
+from use_lumie_study import get_related_people, get_related_concepts, \
+get_related_projects, intersect_related_concepts, model, make_user_vec, vec_for_phrase
 
 user_info_cache = {}
 
@@ -174,6 +175,27 @@ def recommend_for_user(username=None):
     concepts = list_phrases(concept_list, 8)
     return render_template('people.html', recommendations=recommendations,
                           rec_pairs=rec_pairs, yourself=yourself, concepts=concepts)
+
+@app.route('/recommend/topic/<topic>')
+def recommend_for_topic(topic):
+    vec = vec_for_phrase(topic)
+    projects = get_related_projects(vec, 10)
+    people = get_related_people(vec, 10)
+    
+    user_info = [(name, get_user_info(name), weight)
+                       for (name, weight) in people]
+    recommendations = [(info, weight,
+                        intersect_related_concepts([vec, make_user_vec(name),
+                                                    make_user_vec(name)], 100))
+                       for name, info, weight in user_info]
+    rec_pairs = []
+
+    for i in xrange(len(recommendations)/2):
+        other = i+len(recommendations)/2
+        rec_pairs.append((recommendations[i][0],
+                          recommendations[other][0]))
+    return render_template('rec_for_topic.html', topic=topic, projects=projects,
+rec_pairs=rec_pairs)
 
 if __name__ == '__main__':
     if socket.gethostname() == 'achilles':
