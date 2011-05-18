@@ -20,7 +20,7 @@ def sponsor_proj_list(email):
     charms = charms_for_user(email)
     if not charms:
         raise AntiSocialException
-    ids = ['models/PLDBStudy/Documents/'+x['id']+'.txt' for x in charms]
+    ids = ['PLDBDocs/'+x['id']+'.txt' for x in charms]
     return ids
 
 def sponsor_rec(email, n=20):

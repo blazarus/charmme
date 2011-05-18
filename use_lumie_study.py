@@ -3,10 +3,9 @@ import numpy as np
 import json
 import luminoso2
 
-model = luminoso2.load('pldb_luminoso2')
+model = luminoso2.load('pldb_2011_may')
 doc_matrix = model.get_doc_matrix('pldb')
 tag_matrix = model.get_tag_matrix()
-
 
 def get_related_people(vec, n=10):
     got = model.tags_similar_to_vector(vec)
@@ -21,7 +20,13 @@ def get_related_people(vec, n=10):
 
 def get_related_concepts(vec, n=10):
     got = model.domain_terms_similar_to_vector(vec)
-    return got.top_items(n)
+    return best_phrases(got, n)
+
+def best_phrases(simvec, n=10):
+    filtered = simvec.top_items(n*4)
+    favor_phrases = [(key, value*(len(key.split()))) for (key, value) in filtered]
+    favor_phrases.sort(key=lambda item: -item[1])
+    return favor_phrases[:n]
 
 def intersect_related_concepts(categories, n=10):
     if not isinstance(categories, list):
@@ -33,23 +38,16 @@ def intersect_related_concepts(categories, n=10):
     for category in categories[1:]:
         got = np.maximum(1e-6, model.domain_terms_similar_to_vector(category))
         prod = divisi2.multiply(prod, got)
-    return prod.top_items(n)
+    return best_phrases(prod, n)
 
 # random text fragments Catherine found to put in for Joi before he's in the
 # PLDB
 JOI = """
-learning, technology, innovation, Japan, help, Caucus was a groupware product
-developed by Charles Roth, also helped start a computer graphics company, I
-started writing a little and was on the masthead of Mondo 2000 and Wired
-Magazine. (Although the only thing I ended up writing was one article and
-nothing good enough to make it in Wired.)  We created a web joint venture with
-an ad company, From Garage and called it Digital Garage, open source, learning,
-creative commons, In the past 25 years, the Lab helped to create a digital
-revolution -- a revolution that is now over. We are a digital culture. Today,
-the 'media' in Media Lab include the widest range of innovations, from brain
-sciences to the arts. Their impact will be global, social, economic and
-political -- Joi's world, music sharing, twitter, open source, world of
-warcraft, middle east, asia
+technology, Japan,
+Digital Garage, creative commons, the Lab helped to create a digital
+revolution -- a revolution that is now over. We are a digital culture ... impact will be global, social, economic and
+political -- Joi's world, music sharing, twitter, communication, world of
+warcraft, middle east, computer graphics
 """
 
 def make_user_vec(user):

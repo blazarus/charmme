@@ -94,7 +94,7 @@ def list_phrases(concept_list, n=8):
         if weight > 0:
             count = model.database.count_term(concept)
             expanded = model.database.get_term_text(concept)
-            if count > 2 and expanded and is_noun_phrase(expanded):
+            if count > 1 and expanded and is_noun_phrase(expanded):
                 # check to see if the phrase is a superset or subset of another
                 # phrase in the list
                 dup = False
@@ -173,6 +173,9 @@ def recommend_for_user(username=None):
 
     concept_list = get_related_concepts(user_vec, 100)
     concepts = list_phrases(concept_list, 8)
+    if username == 'joi':
+        concepts = 'digital, Creative Commons, ' + concepts
+        yourself['affiliation'] = 'Director'
     return render_template('people.html', recommendations=recommendations,
                           rec_pairs=rec_pairs, yourself=yourself, concepts=concepts)
 
