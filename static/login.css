@@ -1,0 +1,22 @@
+.loginButton
+{
+  font-size:28px;
+  height:2em;
+  margin: 5px;
+  background-color: hsl(28, 100%, 30%) !important;
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#e06800", endColorstr="#994700");
+  background-image: -khtml-gradient(linear, left top, left bottom, from(#e06800), to(#994700));
+  background-image: -moz-linear-gradient(top, #e06800, #994700);
+  background-image: -ms-linear-gradient(top, #e06800, #994700);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #e06800), color-stop(100%, #994700));
+  background-image: -webkit-linear-gradient(top, #e06800, #994700);
+  background-image: -o-linear-gradient(top, #e06800, #994700);
+  background-image: linear-gradient(#e06800, #994700);
+  border-color: #994700 #994700 hsl(28, 100%, 26.5%);
+  color: #fff !important;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.23);
+  -webkit-font-smoothing: antialiased;  
+  border-radius: 5px;
+  
+}

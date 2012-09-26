@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
-from fromcharms import sponsor_category, sponsor_rec, AntiSocialException, NotYourEmailException, charms_for_user
+from fromcharms import sponsor_category, sponsor_rec, get_charms, get_last_location
 import json
 import urllib, urllib2
 import socket
@@ -8,6 +8,7 @@ app = Flask(__name__)
 app.secret_key = "NbNn4fpyT+pNKOL2gEKqo/dUvId7WzKc"
 from use_lumie_study import get_related_people, get_related_concepts, \
 get_related_projects, intersect_related_concepts, model, make_user_vec, vec_for_phrase
+import datetime, time
 
 user_info_cache = {}
 
@@ -17,11 +18,155 @@ blacklist = ['mind common', 'everyone room', 'dynamic way', 'beyond', 'use',
              'various way', 'date everyone', 'enable', 'leverage', 'tool use',
              'various', 'project explore', 'sponsor', 'technique', 'allow', 'allow user']
 
-@app.route('/')
-def front_page():
-    return render_template('start.html')
+def get_time_ago(then):
+    t = datetime.datetime(*time.strptime(then, "%Y-%m-%d %H:%M:%S")[0:7])
+    now = datetime.datetime.now()
+    diff = now - t
+    minutes, seconds = divmod(diff.seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    res = ""
+    if diff.days > 0:
+        res += ("%d days "% diff.days) if diff.days > 1 else "1 day "
+    elif hours > 0:
+        res += ("%d hours "% hours) if hours >1 else "1 hour " 
+    elif minutes > 0:
+        res += ("%d minutes " % minutes) if minutes > 1 else "1 minute "
+    elif seconds > 0:
+        res += ("%d seconds " % seconds) if seconds > 1 else "1 second "
+
+    return res+"ago"
+
+def get_cached_img(size, src):
+    base_url = "http://gi.media.mit.edu/imagecache/"
+    return base_url+str(size)+"?src="+str(src)
+
+
 
 def get_user_info(username):
+    start = time.time()
+    if username in user_info_cache: return user_info_cache[username]
+    data = None
+    info = dict()
+    try: 
+        # if sponsor aka @ exist, query spm
+	if '@' in username:
+	    #print "sponsor!"
+	    url = "http://data.media.mit.edu/spm/contacts/json?username=%s" % username
+            data = json.loads(urllib2.urlopen(url).read().decode('latin1'))
+#	    print "data", data
+	    info = data['profile']
+#	    print info
+	    info[u'name'] = info['first_name']+ " " + info['last_name']
+	    info[u'affiliation'] = info['mlid']
+        # if no sponsor query people
+	else:   	 
+    	    url = "http://data.media.mit.edu/people/json/?filter=(cn=%s)" % urllib.quote(username)
+	    data = json.loads(urllib2.urlopen(url).read().decode('latin1'))
+#	    print "len of data", len(data)
+#	    if len(data) == 0:
+#		print data
+	    info = data[0]
+
+#	print info
+#        print
+#	print info['name']
+	info['picture_url'] = get_cached_img(150, info['picture_url'])
+#	print "after picture"
+	info['last_loc'] = get_last_location(username)
+#	print "after last loc", info['last_loc']
+	if info['last_loc'] == "N/A":
+	    info['last_time'] = "N/A"
+	else:
+	    info['last_time'] = get_time_ago(info.get('last_loc').get('tstamp')) if info['last_loc'] else None
+	
+#	print "after last time", info['last_time']
+        #if isinstance(info['affiliation'], list):
+        #    info['affiliation'] = ', '.join(info['affiliation'])
+
+
+        info['known'] = True
+
+	user_info_cache[username] = info	
+	return info
+  
+    except Exception as e:
+	print "user info error!", type(e), e, username
+	info = {
+	    'username':username,
+	    'name':username,
+	    'picture_url': "http://pldb.media.mit.edu/face/%s" % username, 
+	    'affiliation': None, 
+	    'known': False   }
+    user_info_cache[username] = info
+    return info
+
+def get_user_info_works(username):
+
+    start = time.time()
+    # if in cache already, return that
+    if username in user_info_cache: return user_info_cache[username]
+
+    try:
+	data = json.load(urllib2.urlopen('http://tagnet.media.mit.edu/users?user_name=%s&capability=profile' % urllib.quote(username)))['profile']
+	info = dict(
+         	username=username,
+                name=data['name'],
+                picture_url=get_cached_img(150, data['picture_url']),
+		url = data['url'],
+                affiliation=', '.join(data['affiliation']),
+		usertype=data.get('user_type'),
+		last_loc=get_last_location(username),
+		company=data.get('company_name'),
+		company_url = data.get('company_url'),
+		known=True)
+    except Exception:
+	info = {
+                'username': username,
+                'name': username,
+                'picture_url': "http://pldb.media.mit.edu/face/nobody",
+                'known': False}
+     
+    info['last_time'] = get_time_ago(info.get('last_loc').get('tstamp')) if 'last_loc' in info else None
+
+
+    #get cached version of picture
+    user_info_cache[username] = info
+
+#    print "get_user_info took", time.time()-start
+    return info
+
+def distance(x1, x2):
+
+    if x1 == x2:
+	return 0
+
+    if x1 == "Telmex Lab":
+	x1 = "e14-474-1"
+    if x2 == "Telmex Lab":
+	x2 = "e14-474-1"
+
+    if x1 == "BT Lab":
+	x1 = "e14-320-1" # TODO confirm
+    if x2 == "BT Lab":
+	x2 = "e14-320-1"
+    #get bldg
+    x1_bldg = x1[:3]
+    x2_bldg = x2[:3]
+    
+    # get floor
+    x1_fl = int(x1[4])
+    x2_fl = int(x2[4])
+ 
+    score = 0
+
+    if x1_bldg != x2_bldg:
+	score += 10
+
+    score += abs(x1_fl - x2_fl)
+#    print "vjw: score", score, "from ", x1
+    return score
+
+def get_user_info_ORIG(username):
     if username in user_info_cache: return user_info_cache[username]
     if '@' in username:
         try:
@@ -31,6 +176,10 @@ def get_user_info(username):
                 name=data['name'],
                 picture_url=data['picture_url'],
                 affiliation=', '.join(data['affiliation']),
+		usertype=data.get('user_type'),
+		sponsor=data.get("sponsor"), 
+		company=data.get("company_name"), 
+		company_url = data.get("company_url"), 
                 known=True)
             user_info_cache[username] = info
             return info
@@ -41,10 +190,13 @@ def get_user_info(username):
                 'name': username,
                 'picture_url': "http://pldb.media.mit.edu/face/nobody",
                 'known': False,
+		'usertype':data.get('user_type'),
+		'sponsor':data.get("sponsor"),
                 }
             return info
     try:
         url = "http://data.media.mit.edu/people/json/?filter=(cn=%s)" % urllib.quote(username)
+#	print url
         data = json.loads(urllib2.urlopen(url).read().decode('latin1'))
         info = data[0]
         info['name'] = info['name'].encode('latin1', 'replace').decode('utf-8', 'replace') # Usernames are actually utf-8. Undo latin1-ization.
@@ -114,95 +266,4 @@ def list_phrases(concept_list, n=8):
 def list_concepts(concept_list):
     return ', '.join(x[0] for x in concept_list if x[1] > 0)
 
-@app.route('/recommend', methods=['GET'])
-def recommend_form_response():
-    username = request.args.get('username')
-    if username:
-        return redirect(url_for('recommend_for_user', username=username))
-    else:
-        return redirect(url_for('front_page'))
-
-@app.route('/recommend/<username>')
-def recommend_for_user(username=None):
-    username = username.replace('@media.mit.edu', '')
-    user_charms = []
-    if '@' in username:
-        username = username.replace('@test', '@media.mit.edu')
-        try:
-            user_charms = charms_for_user(username)
-            user_vec = sponsor_category(username)
-        except AntiSocialException:
-            flash(u"You don't have any charms yet. Go out and meet people!", 'error')
-            return redirect(url_for('front_page'))
-        except NotYourEmailException:
-            flash(u"I don't recognize that e-mail address (%s). Please use the e-mail address that you registered for the event with." % username, 'error')
-            return redirect(url_for('front_page'))
-    else:
-        try:
-            user_charms = charms_for_user(username)
-            user_vec = make_user_vec(username)
-        except KeyError:
-            flash(u"Sorry, %s, I don't know who you are." % username, 'error')
-            return redirect(url_for('front_page'))
-
-    rec_items = get_related_people(user_vec, 40)
-    yourself = get_user_info(username)
-    yourself['num_charms'] = len(user_charms)
-    yourself['charms'] = user_charms
-    user_info = [(name, get_user_info(name), weight)
-                       for (name, weight) in rec_items
-                       if name != username]
-    not_same_group = [(name, info, weight) for name, info, weight in user_info
-                       if info['known']
-                       and weight > 0.0
-                       and not intersect(info['affiliation'], yourself.get('affiliation', ''))]
-    recommendations = [(info, weight,
-                        intersect_related_concepts([user_vec, make_user_vec(name), make_user_vec(name)], 100))
-                       for name, info, weight in not_same_group[:10]]
-    if not recommendations:
-        #assert False
-        flash(u"Sorry, %s, I don't know who you are." % username, 'error')
-        return redirect(url_for('front_page'))
-    for rec in recommendations:
-        rec[0]['topics'] = list_phrases(rec[2], 8)
-    rec_pairs = []
-    for i in xrange(len(recommendations)/2):
-        other = i+len(recommendations)/2
-        rec_pairs.append((recommendations[i][0],
-                          recommendations[other][0]))
-
-    concept_list = get_related_concepts(user_vec, 100)
-    concepts = list_phrases(concept_list, 8)
-    if username == 'joi':
-        concepts = 'digital, Creative Commons, ' + concepts
-        yourself['affiliation'] = 'Director'
-    return render_template('people.html', recommendations=recommendations,
-                          rec_pairs=rec_pairs, yourself=yourself, concepts=concepts)
-
-@app.route('/recommend/topic/<topic>')
-def recommend_for_topic(topic):
-    vec = vec_for_phrase(topic)
-    projects = get_related_projects(vec, 10)
-    people = get_related_people(vec, 10)
-    
-    user_info = [(name, get_user_info(name), weight)
-                       for (name, weight) in people]
-    recommendations = [(info, weight,
-                        intersect_related_concepts([vec, make_user_vec(name),
-                                                    make_user_vec(name)], 100))
-                       for name, info, weight in user_info]
-    rec_pairs = []
-
-    for i in xrange(len(recommendations)/2):
-        other = i+len(recommendations)/2
-        rec_pairs.append((recommendations[i][0],
-                          recommendations[other][0]))
-    return render_template('rec_for_topic.html', topic=topic, projects=projects,
-rec_pairs=rec_pairs)
-
-if __name__ == '__main__':
-    if socket.gethostname() == 'achilles':
-        app.run(host='0.0.0.0', debug=True)
-    else:
-        app.run(debug=True)
 

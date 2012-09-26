@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+    <script type="text/javascript" src="/static/javascript/profile_loading.js"></script>
+{% endblock %}
+
+{% block content %}
+    <img id="loading-gif" src='/static/loading-gif-animation.gif' alt="Profile Loading">
+    <p id='loading-message'>Your Profile is loading...</p>
+{% endblock %}

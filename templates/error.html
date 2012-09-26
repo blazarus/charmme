@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Who should I talk to?{% endblock %}
+{% block homebutton %} {% endblock %}
+{% block content %}
+<h3> We need more data! You should try charming more projects. </h3>
+<h5> {{ message }} </h5>
+<h5> Try to log in again later <a href src="{{url_for('index')}}">here</a> </h5>
+{% endblock %}

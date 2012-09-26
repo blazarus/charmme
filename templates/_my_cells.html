@@ -1,0 +1,25 @@
+<a class="pic" href="{{person.url}}">
+    <img src="{{person.picture_url}}">
+</a>
+<ul class="person">
+  <li class="name">
+    <h2>
+    {% if person.url %}
+      <a href="{{person.url}}">{{person.name}}</a>
+    {% else %}
+      {{person.name}}
+    {% endif %}
+    </h2>
+  </li>
+  <li class="affiliation">
+    {% if person.company %}
+	<a href="{{person.company_url}}">{{person.company}}</a>
+    {% else %}
+    	{{person.affiliation}}
+    {% endif %}
+  </li>
+  <li>
+      <script type="IN/Login" data-onAuth="getID"></script>
+  </li>
+
+</li>

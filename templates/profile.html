@@ -1,0 +1,72 @@
+<div id="profile"></div>
+
+{% block bio %}
+  <div id="bio" >
+      	{% set person = yourself %} 
+        {% include "_my_cells.html" %}
+  </div>
+  <div class="clearfix"></div>
+{% endblock %}
+
+{% block location %}
+	<div class="my-location">
+    		<h2> Last seen near...  
+		{% if 'screenid' in yourself.last_loc %}
+			{{yourself.last_loc.screenid}}
+	        {% elif 'readerid' in yourself.last_loc %}
+	                {{yourself.last_loc.readerid}}
+		{% endif%} </h2>
+		{% if 'last_time' in yourself %}
+		<span>({{yourself.last_time}})</span>
+		{% endif %}	
+    {% endblock %}
+</div>
+<hr></hr>
+{% if my_profile %}
+    {% block recommends %}
+    {% if sponsor_recs or recommendations %}
+  	<h3 id="recs-header" > You should try charming...<a href={{url_for('recommend_form_response')}}>(see all)</a> </h3>
+    {% endif %}
+<h4> Sponsors </h4>
+<ul id="sponsor-recs" >
+    {% if sponsor_recs %}
+        {% for s in sponsor_recs[:3] %}
+        <li class="person-cell">
+            {% set person = s %}
+            {% include "_person_cells.html" %}
+            <div class="clearfix"></div>
+        </li>
+        {% endfor %}
+    {% else %}
+      <li>Try charming more projects to see other relevant sponsors.</li>
+    {% endif %}
+</ul>
+
+<h4> Media Lab </h4>
+<ul id="recommendations">
+{% if recommendations %}
+   {% for user1 in recommendations[:3] %}
+        <li class="person-cell">
+	      {% set person = user1 %}
+	      {% include "_person_cells.html" %}
+              <div class="clearfix"></div>
+        </li>
+
+	    {% endfor %}
+{% else %}
+    <li>Try charming more projects to see other relevant media lab researchers.</li>
+{% endif %} 
+</ul>
+    {% endblock %}
+{% endif %}
+    {% block charms %}
+	{% if home_username == yourself.user_name %}
+	    <h3> Most recent charms... <a href={{url_for('charms_form_response')}}> (see all)  </a> </h3>
+	{% else %}
+	    <h3> Most recent charms...  </a> </h3>
+	{% endif %}
+    	<ul id='charms' style="-moz-column-count: 3; column-count: 3;">                             
+      	{% for charm in yourself.charms[:5] %}{% if charm.projectname %}<li><b>{{charm.projectname}}</b> ({{charm.researchgroup}})</li>{% endif %}{% endfor %}</p>
+    	</ul>
+    {% endblock %}
+

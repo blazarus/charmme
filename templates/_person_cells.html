@@ -1,20 +1,73 @@
-<td class="pic" align="right">
-  <a href="{{person.url}}">
-    <img src="{{person.picture_url}}">
-  </a>
-</td>
-<td class="person">
-  <div class="name">
-    {% if person.url %}
-      <a href="{{person.url}}">{{person.name}}</a>
+{% if person %}
+{% if person.picture_url %}
+  {% if person.url %}
+    <a class="pic" href="{{person.url}}">
+      <img src="{{person.picture_url}}">
+    </a>
+    {% else %}
+      <img src="{{person.picture_url}}">
+    {% endif %}
+{% endif %}
+<ul class="person">
+  <li class="name">
+    {% if person.user_name %}
+      <a href="{{url_for('profile', username=person.user_name)}}">{{person.name}}</a>
+<!--      <a href="{{person.url}}">{{url_for('profile', username=person.username)}}</a> -->
     {% else %}
       {{person.name}}
     {% endif %}
-  </div>
-  <div class="affiliation">
-    {{person.affiliation}}
-  </div>
+  </li>
+  <li class="affiliation">
+    {% if person.company_name %}
+	<a href="{{person.company_url}}">{{person.company_name}}</a>
+    {% elif person.affiliation and person.affiliation is not sameas '{}'%}
+        {% if person.affiliation is string %}
+          {{ person.affiliation }}
+        {% else %}
+          {% for a in person.affiliation %}
+            {% if loop.last %}
+              {{ a }}
+            {% else %}
+              {{ a }},
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+    {% endif %}
+  </li>
+
   {% if person.topics %}
-    <div class="topics">Try talking about: {{person.topics}}</div>
+    <li class="topics">
+	Try talking about:
+       {% if person.topics is string %}
+          {{ person.topics }}
+        {% else %}
+          {% for a in person.topics %}
+            {% if loop.last %}
+              {{ a }}
+            {% else %}
+              {{ a }},
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+    </li>
   {% endif %}
-</td>
+  <li class = "location">
+    {% if person.last_loc %}
+      Last seen near {{person.last_loc.readerid}} ({{person.last_time}})
+    {% endif %}
+  </li>
+  <li class = "met_button">
+    <form id="set-met" action="{{url_for('set_met')}}" method="POST">
+	<input type="hidden" name="username" value="{{person.user_name}}"/>
+	{% if person.company_name %} <!-- Tell back end whether this person is media lab or sponsor, based on if they have a company (kind of hacky) -->
+	  <input type="hidden" name="rec_type" value="recommendation"/>
+	{% else %}
+	  <input type="hidden" name="rec_type" value="sponsor_rec"/>
+	{% endif %}
+	<input type="submit" value="We've met!" onClick="setMetCookie('{{person.name}}')" />
+    </form
+  </li>
+</ul>
+{% else %}
+<p>{{person}}</p>
+{% endif %}

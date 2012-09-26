@@ -1,35 +1,50 @@
 <!doctype html>
 <html>
     <head>
-        <title>ConnectMe: {% block title %}Who should I talk to?{% endblock %}</title>
+        <meta name ="viewport" content = "initial-scale = 1.0,width = device-width,user-scalable =no, minimum-scale=1.0,maximum-scale=1.0"/>
+        <meta name="apple-touch-fullscreen" content="yes"/>
+
+        <title>charmMe: {% block title %}Who should I talk to?{% endblock %}</title>
+
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></link>
+	
+	{% block css %}
+	{% endblock %}
+
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.7/jquery-ui.min.js"></script>
+
+	{% block scripts %}
+	{% endblock %}
+
+        <script type="text/javascript">
+            function selectAll(id)
+            {
+                document.getElementById(id).focus();
+                document.getElementById(id).select();
+            }
+
+
+	{% block javascript %}
+        {% endblock %}
+
+        </script>
+
     </head>
     <body>
-        <a href="/"><img src="{{url_for('static', filename='logo.png')}}"
-            title="ConnectMe" alt="ConnectMe"/></a>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <ul class="flashes">
-            {% for category, message in messages %}
-              <li class="{{ category }}">{{ message }}</li>
-            {% endfor %}
-            </ul>
-          {% endif %}
-        {% endwith %}
-        
+	{% block homebutton %}
+            <nav>
+              <h1 id="title" >CharmMe</h1>
+            </nav>
+	{% endblock %}
         <div id="content">
             {% block content %}{% endblock %}
         </div>
-        <form action="{{url_for('recommend_form_response')}}" method="GET">
-            <img src="{{url_for('static', filename='email2.png')}}"
-            title="Enter your username or e-mail address:"
-            alt="Enter your username or e-mail address:"
-            />
-            <div>
-                <input type="text" class="user-input" name="username"/>
-                <input type="submit" class="button" value="Connect me!"/>
-            </div>
-        </form>
+	{% block jslibs %}
+	{% endblock %}
+	<script type="text/javascript" language="javascript" src="{{url_for('static', filename='charmme.js')}}"></script>
+	
     </body>
 </html>
 

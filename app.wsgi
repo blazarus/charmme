@@ -1,7 +1,7 @@
 
-import os; os.chdir('/csc/code/connectme')
+import os; os.chdir('/csc/code/charmme')
 import sys
 sys.stdout = sys.stderr
-sys.path.insert(0, '/csc/code/connectme')
+sys.path.insert(0, '/csc/code/charmme')
 os.environ['NLTK_DATA'] = '/csc/main/data/nltk'
-from connectme import app as application
+from main import app as application

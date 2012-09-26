@@ -1,0 +1,15 @@
+{% extends "base.html" %} 
+
+{% block javascript %}
+{% endblock %}
+
+{% block content %}
+
+    {% block charms %}
+    <h3> Most recent charms... </h3>
+	{% for charm in charms %} {% if charm.projectname %} <li><b>{{charm.projectname}}</b> ({{charm.researchgroup}})</li>{% endif %}{% endfor %} </p>
+	</ul>
+
+    {% endblock %}
+
+{% endblock %}

@@ -1,6 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Who should I talk to?{% endblock %}
 
+{% block homebutton %}
+{% endblock %}
+
 {% block content %}
-<h1>Who should I talk to?</h1>
+	<form action="{{url_for('survey_form_response')}}" method="GET">
+	  <div>
+	  	<label for="email"> Enter your Media Lab username or email here: </label>
+		<input type="text" class="user-input" name="username"/>
+		<input type="submit" class="button" value="Go" />
+	  </div>
+	</form>
 {% endblock %}

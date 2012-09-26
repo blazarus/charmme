@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{url_for('static', filename='login.css') }}"> </link>
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}
+
+{% block content %}
+<h1> Welcome to CharmMe! </h1>
+
+<div id="login">
+<h3> Please enter your webcode, which is located on the bottom corner of your badge </h3>
+<form id="webcode-login" action="{{url_for('login')}}" method="POST">
+    <p><input id='in' type=text name=my_webcode placeholder="Enter webcode here..." onClick="selectAll('in')" />
+    <input type=submit value=Login>
+</form>
+
+{% if users %}
+<h3>OR sign in as...</h3>
+<ul id="userlist">
+{% for user in users %}
+    <li class="user">
+	<form action="{{url_for('from_gi', username=user)}}">
+	    <input type=submit class="loginButton" value="{{user}}"/>
+	</form>
+    </li>
+{% endfor %}
+</ul>
+<!--	<a href="{{url_for('profile', username=user)}}">{{ user }}</a> -->
+{% endif %}
+</div>
+{% endblock %}
