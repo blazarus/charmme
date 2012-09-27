@@ -59,10 +59,9 @@ def get_user_info(username):
         'user_name' -> string of ML username
         'url' -> string of url of their personal website
         'picture_url' -> string of url of image
-	'company' -> 
-	'company_url' ->
+	    'company' -> 
+	    'company_url' ->
         'affiliation' -> list of strings of group names
-        'topics' -> list of strings of topics
         'last_loc' -> string of location
 	'last_time' -> string of time last seen
     '''
