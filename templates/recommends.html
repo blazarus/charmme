@@ -1,0 +1,44 @@
+{% extends "base.html" %} 
+
+{% block javascript %}
+{% endblock %}
+
+{% block content %}
+
+    {% block recommend %}
+    <h2> You should try charming...</h2>
+    <h4> Sponsors </h4>    
+<ul id="sponsor-recs">
+    {% for user1 in sponsor_recs %}
+    <li class="person-cell">
+      {% set person = user1 %}
+      {% include "_person_cells.html" %}
+   </li>
+    {% endfor %}
+    {% if not sponsor_recs %}
+      <li>Try charming more projects to see other relevant sponsors.</li>
+    {% endif %}
+</ul>
+
+
+    <h4> Media Lab </h4>
+
+<ul id="recommendations" >
+    {% for user1 in recommendations %}
+    <li class="person-cell">
+      {% set person = user1 %}
+      {% include "_person_cells.html" %}
+      <div class="clearfix"></div>
+   </li>
+    {% endfor %}
+{% if not recommendations %}
+    <li>Try charming more projects to see other relevant media lab researchers.</li>
+{% endif %}
+</ul>
+	
+    {% endblock %}
+
+    {% block charms %}
+    {% endblock %}
+
+{% endblock %}
