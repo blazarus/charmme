@@ -14,7 +14,7 @@
   <li class="affiliation">
     {% if person.company %}
 	<a href="{{person.company_url}}">{{person.company}}</a>
-    {% else %}
+    {% elif person.affiliation%}
     	{{person.affiliation}}
     {% endif %}
   </li>

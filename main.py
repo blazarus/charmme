@@ -1,14 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, g
 from charm_exceptions import AntiSocialException, NotYourEmailException, InactiveCharmsException
-from fromcharms import sponsor_category, sponsor_rec, get_last_location
 import json
 import urllib, urllib2
 import socket
-import nltk
 app = Flask(__name__)
 app.secret_key = '\x87WI]\xa4\xb99\x0b\xf7B<9\xc6)\x8b\xc5`\xf8\xfbv\x8a\xefO\xf1'
-from use_lumie_study import get_related_people, get_related_concepts, \
-get_related_projects, intersect_related_concepts, model, make_user_vec, vec_for_phrase
 
 import time
 import datetime
@@ -40,6 +36,7 @@ def before_request():
 def after_request(response):
     g.db.close()
     return response
+
 
 
 user_info_cache = {}
@@ -230,9 +227,9 @@ def retrieve_yourself(username):
         try:
             print "Querying GI for 'yourself' info"
             yourself = get_user_info(username)
-	    print "yourself:", yourself
-	    #Mimick an 'insert or update' using the integrity exception
-	    try:
+    	    print "yourself:", yourself
+    	    #Mimick an 'insert or update' using the integrity exception
+    	    try:
                 g.db.execute("INSERT INTO users (username, info, update_time) VALUES (?,?,?);", (username, str(yourself), time.time()))
             except sqlite3.IntegrityError, m:
                 g.db.execute("UPDATE users SET info=?, update_time=? WHERE username=?", (str(yourself), time.time(), username))
@@ -396,6 +393,7 @@ def charms_for_user(username):
     
     return render_template('charms.html', charms=charms, home_username=request.cookies.get('username'))
 
+"""
 @app.route('/recommend/topic/<topic>')
 def recommend_for_topic(topic):
     vec = vec_for_phrase(topic)
@@ -416,7 +414,7 @@ def recommend_for_topic(topic):
                           recommendations[other][0]))
     return render_template('rec_for_topic.html', topic=topic, projects=projects,
 rec_pairs=rec_pairs)
-
+"""
 @app.route('/set_met', methods=['POST'])
 def set_met():
     if request.method == 'POST':
