@@ -20,14 +20,14 @@ REC_CACHE_TIME = 3600 #1 hour
 
 def connect_db():
     return sqlite3.connect(DATABASE)
-	
+    
 from contextlib import closing
 def init_db():
     with closing(connect_db()) as db:
         with app.open_resource('schema.sql') as f:
             db.cursor().executescript(f.read())
         db.commit()
-	
+    
 @app.before_request
 def before_request():
     g.db = connect_db()
@@ -75,7 +75,7 @@ def ancient(timestr):
 def from_gi(username=None):
     print "gi reroute", username
     if username == None:
-	return redirect(url_for('login'))
+        return redirect(url_for('login'))
     resp = make_response(redirect(url_for('profile', username=username)))
     resp.set_cookie('username', username)
     return resp 
@@ -85,10 +85,10 @@ def gi(screenid=None):
     # get list of people standing infront of screenid 
     users = get_users_from_gi(screenid)
     if len(users) == 1:
-	username = users[0]
-	resp = make_response( redirect(url_for('profile', username=users[0])) )
-	resp.set_cookie('username', users[0])
-	return resp
+        username = users[0]
+        resp = make_response( redirect(url_for('profile', username=users[0])) )
+        resp.set_cookie('username', users[0])
+        return resp
     return render_template('login.html', users=users)
 
 @app.route('/')
@@ -97,23 +97,27 @@ def index():
     webcode = request.cookies.get('web_code')
     print "username", username, "webcode", webcode
     if request.method == 'POST':
-	print "post from GI detected"
-	uname = request.form['value']
-	resp = make_response( redirect(url_for('profile', username=uname)))
-	resp.set_cookie('username', uname)
-	return resp
+        print "post from GI detected"
+        uname = request.form['value']
+        resp = make_response( redirect(url_for('profile', username=uname)))
+        resp.set_cookie('username', uname)
+        return resp
     if webcode == None and username == None:
         print "first time user! no cookie and webcode"
-	return redirect(url_for('login'))
+        return redirect(url_for('login'))
     else:
-	username = get_username(webcode)
-	if username == None:
-	    print "username is none from webcode"
-	    return redirect(url_for('login'))
-	print "returning user!", username
-	resp = make_response( redirect(url_for('profile', username=username)))
-	resp.set_cookie('username', username)
-	return resp
+        username = get_username(webcode)
+    if username == None:
+        print "username is none from webcode"
+        error = "Unable to log in." 
+        submsg = "Please note that you must be on the media lab network to use this app."
+        return render_template('error.html', message=error, sub_message=submsg) 
+
+        # return redirect(url_for('login'))
+    print "returning user!", username
+    resp = make_response( redirect(url_for('profile', username=username)))
+    resp.set_cookie('username', username)
+    return resp
 
 def indexOld():
     print 'webcode??', request.cookies.get('web_code')
@@ -121,21 +125,21 @@ def indexOld():
     #TODO must differentiate between redirecting skip from qr OR user landed here directly
     print "cookie webcode", request.cookies.get('web_code')
     if request.cookies.get('web_code') == None:
-	return redirect(url_for('login'))
+        return redirect(url_for('login'))
     if request.cookies.get('web_code') != None:
-	my_webcode = request.cookies['web_code']
-	username = get_username(my_webcode)	
-	print "username", username
-#	return redirect(url_for('profile', username=username))
-        # go to user's profile
-        #return 'Logged in as %s' % escape(session['my_webcode'])
+        my_webcode = request.cookies['web_code']
+        username = get_username(my_webcode) 
+        print "username", username
+    #   return redirect(url_for('profile', username=username))
+            # go to user's profile
+            #return 'Logged in as %s' % escape(session['my_webcode'])
 
-#    if 'web_code' in request.cookies:
-#	username = get_username(session['my_webcode'])
-#	print "in here", username
-	resp = make_response( redirect(url_for('profile', username=username)))
-	resp.set_cookie('username', username)
-	return resp
+    #    if 'web_code' in request.cookies:
+    #   username = get_username(session['my_webcode'])
+    #   print "in here", username
+        resp = make_response( redirect(url_for('profile', username=username)))
+        resp.set_cookie('username', username)
+        return resp
     #return redirect("http://qr.media.mit.edu/login?next=http://charmme.media.mit.edu/&noskip=true")    
     return redirect(url_for('login'))
 
@@ -143,9 +147,9 @@ def indexOld():
 @app.route('/login', methods=['GET', 'POST'])
 def login(users=None):
     if request.method == 'POST':
-	print "post detected"
-	resp = make_response( redirect(url_for('index')))
-	resp.set_cookie('web_code', request.form['my_webcode'])
+        print "post detected"
+        resp = make_response( redirect(url_for('index')))
+        resp.set_cookie('web_code', request.form['my_webcode'])
         return resp
     return render_template("login.html")
 
@@ -164,28 +168,45 @@ def profile_data(username):
     myprofile = home_username == username
     print "returning user?", myprofile, username
     print "met", request.cookies
-# TODO test if webcode belongs to session. self profile diff view vs others
-#TODO package user's info into dictionary
+    # TODO test if webcode belongs to session. self profile diff view vs others
+    #TODO package user's info into dictionary
+
 
     yourself = retrieve_yourself(username)
 
+    if yourself == None:
+        msg = "We are experiencing a problem with our servers."
+        submsg = "Please make sure you are on the MIT Media Lab network, \
+                as charmMe only works on this network."
+        return render_template('error.html', message = msg, sub_message=submsg)
+
+
     try:
-	user_charms = get_charms(username)
+        user_charms = get_charms(username)
+        if not user_charms: # means there was a problem accessing the url to get the charms
+            msg = "Sorry, something went wrong on our end."
+            submsg = "If you are not on the media lab network, this is probably the cause of the error."
+            return render_template('error.html', message=msg, sub_message=submsg)
     except AntiSocialException:
-	if home_username == username:
-	    flash(u"You don't have any charms yet. Go out and meet people!", 'error')
-	    print "No Charms!"
-	    return render_template('error.html', message="You don't have any charms! We need to know something about you before we can recommend anyone. To charm something, take a picture of a project or session QR Code using a QR Reader application. A good QR Reader to download is Google Goggles.")
-	else:
-	    print "has no charms", username
-	    return render_template('error.html', message = "Also, this user does not have any charms. ")
+        if home_username == username:
+            flash(u"You don't have any charms yet. Go out and meet people!", 'error')
+            print "No Charms!"
+            msg = "You don't have any charms!"
+            submsg = "We need to know something \
+                about you before we can recommend anyone. To charm something, \
+                take a picture of a project or session QR Code using a QR Reader application. \
+                A good QR Reader to download is Google Goggles."
+            return render_template('error.html', message=msg, sub_message=submsg)
+        else:
+            print "has no charms", username
+            return render_template('error.html', message = "Also, this user does not have any charms. ")
     except InactiveCharmsException:
-	print "inactive charm exception"
-	return render_template('error.html', message="Unfortunately, the projects you have charmed are no longer active. Go charm new projects!") 
+        print "inactive charm exception"
+        return render_template('error.html', message="Unfortunately, the projects you have charmed are no longer active. Go charm new projects!") 
     except Exception as e:
-	print "error1", type(e), e
-	flash(u"error", 'error')
-	return render_template('error.html', message="We are working on a fix right now.")
+        print "error1", type(e), e
+        flash(u"error", 'error')
+        return render_template('error.html', message="We are working on a fix right now.")
 
     yourself['num_charms']= len(user_charms)
     user_charms.reverse()
@@ -195,22 +216,18 @@ def profile_data(username):
     if not myprofile:
         resp = make_response( render_template("profile.html", yourself=yourself, recommendations=[],
                                 sponsor_recs=[], home_username=home_username, my_profile=False))
-	resp.set_cookie('username', home_username)
-	print "profile load time: ", time.time() - start
-	return resp
+        resp.set_cookie('username', home_username)
+        print "profile load time: ", time.time() - start
+        return resp
 
     recommendations = retrieve_recommendations(username, yourself) 
 
     sponsor_recs = retrieve_sponsor_recs(username, yourself)
 
-    if not recommendations:
-        flash(u"Sorry, %s, I don't know who you are." % username, 'error')
-        return render_template('error.html', message="Sorry about that.")
-    
     if username == 'joi':
-	yourself['affiliation'] = 'Director'
+        yourself['affiliation'] = 'Director'
     resp = make_response( render_template("profile.html", yourself=yourself, recommendations=recommendations,
-				sponsor_recs=sponsor_recs, home_username=home_username, my_profile=True))
+                sponsor_recs=sponsor_recs, home_username=home_username, my_profile=True))
     resp.set_cookie('username', home_username)
     print "profile load time: ", time.time() - start, "\n\n\n\n\n"
     return resp
@@ -224,19 +241,19 @@ def retrieve_yourself(username):
         yourself = eval(result[1])
         print "'yourself' info from DB cache:", yourself
     else:
-        try:
-            print "Querying GI for 'yourself' info"
-            yourself = get_user_info(username)
-    	    print "yourself:", yourself
-    	    #Mimick an 'insert or update' using the integrity exception
-    	    try:
-                g.db.execute("INSERT INTO users (username, info, update_time) VALUES (?,?,?);", (username, str(yourself), time.time()))
-            except sqlite3.IntegrityError, m:
-                g.db.execute("UPDATE users SET info=?, update_time=? WHERE username=?", (str(yourself), time.time(), username))
+        print "Querying GI for 'yourself' info"
+        yourself = get_user_info(username)
+        print "yourself:", yourself
 
-            g.db.commit()
-        except urllib2.HTTPError:
-            return render_template('error.html', message="Sorry, our system is currently down. Try again later.")
+        if not yourself:
+            return yourself
+        #Mimick an 'insert or update' using the integrity exception
+        try:
+            g.db.execute("INSERT INTO users (username, info, update_time) VALUES (?,?,?);", (username, str(yourself), time.time()))
+        except sqlite3.IntegrityError, m:
+            g.db.execute("UPDATE users SET info=?, update_time=? WHERE username=?", (str(yourself), time.time(), username))
+
+        g.db.commit()
     return yourself
 
 def retrieve_recommendations(username, yourself):
@@ -248,6 +265,7 @@ def retrieve_recommendations(username, yourself):
     print "Result of querying db for recommendations:", result
     use_cache = len(result) > 0
     curr_time = time.time()
+    
     for res in result:
         if not (res and res[1] and curr_time-res[4] < REC_CACHE_TIME):
             use_cache = False
@@ -258,20 +276,21 @@ def retrieve_recommendations(username, yourself):
         try:
             print "Querying GI for recommendations"
             recommendations = get_recommendations(username)
-	    curr_time = time.time()
+            curr_time = time.time()
             for person in recommendations:
-		#Mimick an 'insert or update' using the integrity exception
-		try:
+                #Mimick an 'insert or update' using the integrity exception
+                try:
                     g.db.execute("INSERT INTO users (username, info, update_time) VALUES (?,?,?);", (person.get('user_name'), str(person), curr_time))
-		except sqlite3.IntegrityError, m:
-		    g.db.execute("UPDATE users SET info=?, update_time=? WHERE username=?", (str(person), curr_time, person.get('user_name')))
-		try:
+                except sqlite3.IntegrityError, m:
+                    g.db.execute("UPDATE users SET info=?, update_time=? WHERE username=?", (str(person), curr_time, person.get('user_name')))
+                try:
                     g.db.execute("INSERT INTO recommendations (yourself, recommendation, update_time) VALUES (?, ?, ?);", (username, person.get('user_name'), curr_time))
-		except sqlite3.IntegrityError, m:
-		    g.db.execute("UPDATE recommendations SET update_time=? WHERE yourself=? AND recommendation=?", (curr_time, username, person.get('user_name')))
+                except sqlite3.IntegrityError, m:
+                    g.db.execute("UPDATE recommendations SET update_time=? WHERE yourself=? AND recommendation=?", (curr_time, username, person.get('user_name')))
             g.db.commit()
         except urllib2.HTTPError:
             return render_template('error.html', message="Sorry, our system is currently down. Try again later.")
+    
     #remove people that are None
     recommendations = [person for person in recommendations if person]
     recommendations = util.sort_people_by_dist(yourself, recommendations)
@@ -307,12 +326,12 @@ def retrieve_sponsor_recs(username, yourself):
             print "Querying GI for sponsor_recs"
             sponsor_recs = get_sponsor_recs(username)
             for person in sponsor_recs:
-		try:
+                try:
                     g.db.execute("INSERT INTO users (username, info, update_time) VALUES (?,?,?);", (person.get('user_name'), str(person), curr_time))
                 except sqlite3.IntegrityError, m:
                     g.db.execute("UPDATE users SET info=?, update_time=? WHERE username=?", (str(person), curr_time, person.get('user_name')))
                 try:                    
-		    g.db.execute("INSERT INTO sponsor_recs (yourself, sponsor_rec, update_time) VALUES (?, ?, ?);", (username, person.get('user_name'), curr_time))
+                    g.db.execute("INSERT INTO sponsor_recs (yourself, sponsor_rec, update_time) VALUES (?, ?, ?);", (username, person.get('user_name'), curr_time))
                 except sqlite3.IntegrityError, m:
                     g.db.execute("UPDATE sponsor_recs SET update_time=? WHERE yourself=? AND sponsor_rec=?", (curr_time, username, person.get('user_name')))
 
@@ -339,9 +358,8 @@ def logout():
     # remove the username from the session if its there
 
     session.pop('my_webcode', None)
-    session.clear()    
-    resp = make_response( redirect("http://qr.media.mit.edu/logout") )
-#    return redirect("http://qr.media.mit.edu/logout?next=http://http://connectme.csc.media.mit.edu:3000/")
+    session.clear()   
+    resp = redirect(url_for('login')) 
     resp.set_cookie('username', None) 
     resp.set_cookie('web_code', None)
     return resp
@@ -360,7 +378,7 @@ def recommend_form_response():
 
 @app.route('/recommends/<username>')
 def recommend_for_user(username=None):
-#    print "recommend!", request.cookies
+    # print "recommend!", request.cookies
     start = time.time()
     username = username.replace('@media.mit.edu', '')
     yourself = retrieve_yourself(username)
@@ -378,13 +396,13 @@ def recommend_for_user(username=None):
 @app.route('/charms', methods=['GET'])
 def charms_form_response():
     username = request.cookies.get('username')
-#    username = request.args.get('username')
+    # username = request.args.get('username')
     print "charm form response username", username
     if username:
-	print "in username"
-	return redirect(url_for('charms_for_user', username=username))
+        print "in username"
+        return redirect(url_for('charms_for_user', username=username))
     else:
-	return redirect(url_for('login'))
+        return redirect(url_for('login'))
 
 @app.route('/charms/<username>')
 def charms_for_user(username):
@@ -421,15 +439,15 @@ def set_met():
         if 'username' in request.cookies:
             username = request.cookies['username'] 
         else:
-	    print "user name not in cookies!"
-	    return render_template('error', message="You are not logged in. Please log in and try again.")
+            print "user name not in cookies!"
+            return render_template('error', message="You are not logged in. Please log in and try again.")
         if 'username' in request.form:
-	    met = request.form['username']
-	    curs = g.db.execute("UPDATE recommendations SET has_met=? WHERE yourself=? AND recommendation=?", (True, username, met))
-	    curs = g.db.execute("UPDATE sponsor_recs SET has_met=? WHERE yourself=? AND sponsor_rec=?", (True, username, met)) 
-	    g.db.commit()
-	    print "Set that", username, "has met", met
-	resp = make_response( redirect(url_for('profile', username=username)) )
+            met = request.form['username']
+            curs = g.db.execute("UPDATE recommendations SET has_met=? WHERE yourself=? AND recommendation=?", (True, username, met))
+            curs = g.db.execute("UPDATE sponsor_recs SET has_met=? WHERE yourself=? AND sponsor_rec=?", (True, username, met)) 
+            g.db.commit()
+            print "Set that", username, "has met", met
+        resp = make_response( redirect(url_for('profile', username=username)) )
         resp.set_cookie('username', username)
         return resp
 

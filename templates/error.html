@@ -1,8 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Who should I talk to?{% endblock %}
-{% block homebutton %} {% endblock %}
+
 {% block content %}
-<h3> We need more data! You should try charming more projects. </h3>
-<h5> {{ message }} </h5>
-<h5> Try to log in again later <a href src="{{url_for('index')}}">here</a> </h5>
+	<h2> Something went wrong! </h2>
+	<h3> {{ message }} </h3>
+	<!-- <h3> We need more data! You should try charming more projects. </h3> -->
+
+	<!-- sub_message should explain the error, or give steps to prevent it -->
+	<h5> {{ sub_message }} </h5> 
+	<h5>
+		<!-- logout will clear cookies and return to the login page -->
+		Try to log in again later <a href="{{url_for('logout')}}">here</a> 
+	</h5>
 {% endblock %}
