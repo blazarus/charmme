@@ -110,7 +110,7 @@ def index():
     if username == None:
         print "username is none from webcode"
         error = "Unable to log in." 
-        submsg = "Please note that you must be on the media lab network to use this app."
+        submsg = "Please check your credentials and try again."
         return render_template('error.html', message=error, sub_message=submsg) 
 
         # return redirect(url_for('login'))
@@ -176,8 +176,7 @@ def profile_data(username):
 
     if yourself == None:
         msg = "We are experiencing a problem with our servers."
-        submsg = "Please make sure you are on the MIT Media Lab network, \
-                as charmMe only works on this network."
+        submsg = ""
         return render_template('error.html', message = msg, sub_message=submsg)
 
 
@@ -185,7 +184,7 @@ def profile_data(username):
         user_charms = get_charms(username)
         if not user_charms: # means there was a problem accessing the url to get the charms
             msg = "Sorry, something went wrong on our end."
-            submsg = "If you are not on the media lab network, this is probably the cause of the error."
+            submsg = ""
             return render_template('error.html', message=msg, sub_message=submsg)
     except AntiSocialException:
         if home_username == username:
